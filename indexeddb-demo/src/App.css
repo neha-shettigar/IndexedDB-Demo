@@ -1,10 +1,15 @@
 .App {
+  display: flex;
   text-align: center;
+  flex-direction: column;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.App__table{
+  display: flex;
+  flex-direction: column;
+}
+.App__table-body{
+  width: 50%;
 }
 
 @media (prefers-reduced-motion: no-preference) {

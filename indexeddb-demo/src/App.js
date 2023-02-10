@@ -38,7 +38,11 @@ const App = () => {
   const [id, setId] = React.useState('');
   const [role, setRole] = React.useState('');
   const [salary, setSalary] = React.useState('');
-  const [allUsersData, setAllUsersData] = React.useState([]);
+  const [allEmployeeData, setallEmployeeData] = React.useState([]);
+  const [addEmployee, setAddEmployee] = React.useState(false);
+  const [removeEmployee, setRemoveEmployee] = React.useState(false);
+  const [updateEmployee, setUpdateEmployee] = React.useState(false);
+  const [selectedEmployee, setSelectedEmployee] = React.useState({})
 
   const onChangeName = (event) => setName(event.target.value);
   const onChangeRole = (event) => setRole(event.target.value);
@@ -50,22 +54,42 @@ const App = () => {
         const db = dbPromise.result;
         const transaction = db.transaction('userData', 'readwrite');
         const userData = transaction.objectStore('userData');
-        const users = userData.put({
-          id: allUsersData?.length + 1,
-          name,
-          role,
-          salary,
-        });
-        users.onsuccess = () => {
-          transaction.oncomplete = () => {
-            db.close();
+        if (addEmployee) {
+          const users = userData.put({
+            id: allEmployeeData?.length + 1,
+            name,
+            role,
+            salary,
+          });
+          users.onsuccess = () => {
+            transaction.oncomplete = () => {
+              db.close();
+            };
+            alert('Employee added');
           };
-          alert('Employee added');
-        };
-        users.onerror = (event) => {
-          console.log(event);
-          alert('Error occured');
-        };
+          users.onerror = (event) => {
+            console.log(event);
+            alert('Error occured');
+          };
+        }
+        else {
+          const users = userData.put({
+            id: selectedEmployee?.id,
+            name,
+            role,
+            salary,
+          });
+          users.onsuccess = () => {
+            transaction.oncomplete = () => {
+              db.close();
+            };
+            alert('Employee updated');
+          };
+          users.onerror = (event) => {
+            console.log(event);
+            alert('Error occured');
+          };
+        }
       };
     }
   };
@@ -81,31 +105,71 @@ const App = () => {
       const userData = transaction.objectStore('userData');
       const users = userData.getAll();
       users.onsuccess = (query) => {
-        setAllUsersData(query.srcElement.result);
+        setallEmployeeData(query.srcElement.result);
       };
       users.onerror = (query) => {
         alert('Error while loading');
       };
     };
   };
+  const removeData = (user) => {
+    const dbPromise = idb.open('test-db', 2);
+    dbPromise.onsuccess = () => {
+      const db = dbPromise.result;
+      const transaction = db.transaction('userData', 'readwrite');
+      const userData = transaction.objectStore('userData');
+      const users = userData.delete(user?.id);
+      users.onsuccess = (query) => {
+        alert('Employee deleted')
+      };
+      users.onerror = (query) => {
+        alert('Error while loading');
+        getAllData();
+      };
+    };
+  };
   return (
     <div className='App'>
-      <InputTextField
-        value={name}
-        label='Add Name'
-        onchangeValue={onChangeName}
+      <h1>Employee Details</h1>
+      <Button
+        onClickButton={() => {
+          setAddEmployee(true);
+          setUpdateEmployee(false);
+          setSelectedEmployee({});
+          setName('');
+          setRole('');
+          setSalary('');
+        }}
+        label='Add'
       />
-      <InputTextField
-        value={role}
-        label='Add role'
-        onchangeValue={onChangeRole}
-      />
-      <InputTextField
-        value={salary}
-        label='Add salary'
-        onchangeValue={onChangeSalary}
-      />
-      <Button onClickButton={onSubmit} label='submit' />
+      {addEmployee || updateEmployee ? (
+        <section>
+          <h3>{addEmployee? 'Add Employee Details' : 'Update Employee Details'}</h3>
+          <InputTextField
+            value={name}
+            label='Name: '
+            onchangeValue={onChangeName}
+          />
+          <InputTextField
+            value={role}
+            label='Role: '
+            onchangeValue={onChangeRole}
+          />
+          <InputTextField
+            value={salary}
+            label='Salary: '
+            onchangeValue={onChangeSalary}
+          />
+          <Button
+            onClickButton={() => {
+              onSubmit();
+              // setAddEmployee(true);
+              // setUpdateEmployee(false);
+            }}
+            label={addEmployee? 'Add' : "Update"}
+          />{' '}
+        </section>
+      ) : null}
 
       <table className='App__table'>
         <thead>
@@ -115,13 +179,32 @@ const App = () => {
             <th>Salary</th>
           </tr>
         </thead>
-        <tbody>
-          {allUsersData?.map((user) => {
+        <tbody className='App_table-body'>
+          {allEmployeeData?.map((user) => {
             return (
               <tr key={user?.id}>
                 <td>{user?.name}</td>
                 <td>{user?.role}</td>
                 <td>{user?.salary}</td>
+                <td>
+                  <Button
+                    onClickButton={() => { setRemoveEmployee(true); removeData(user) }}
+                    label='Remove'
+                  />
+                </td>
+                <td>
+                  <Button
+                    onClickButton={() => {
+                      setUpdateEmployee(true);
+                      setAddEmployee(false);
+                      setSelectedEmployee(user);
+                      setName(user?.name);
+                      setRole(user?.role);
+                      setSalary(user?.salary);
+                    }}
+                    label='Update'
+                  />
+                </td>
               </tr>
             );
           })}
