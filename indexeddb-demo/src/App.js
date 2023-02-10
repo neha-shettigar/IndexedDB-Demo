@@ -42,57 +42,12 @@ const App = () => {
   const [addEmployee, setAddEmployee] = React.useState(false);
   const [removeEmployee, setRemoveEmployee] = React.useState(false);
   const [updateEmployee, setUpdateEmployee] = React.useState(false);
-  const [selectedEmployee, setSelectedEmployee] = React.useState({})
+  const [selectedEmployee, setSelectedEmployee] = React.useState({});
 
   const onChangeName = (event) => setName(event.target.value);
   const onChangeRole = (event) => setRole(event.target.value);
   const onChangeSalary = (event) => setSalary(event.target.value);
-  const onSubmit = (event) => {
-    const dbPromise = idb.open('test-db', 2);
-    if (name && role && salary) {
-      dbPromise.onsuccess = () => {
-        const db = dbPromise.result;
-        const transaction = db.transaction('userData', 'readwrite');
-        const userData = transaction.objectStore('userData');
-        if (addEmployee) {
-          const users = userData.put({
-            id: allEmployeeData?.length + 1,
-            name,
-            role,
-            salary,
-          });
-          users.onsuccess = () => {
-            transaction.oncomplete = () => {
-              db.close();
-            };
-            alert('Employee added');
-          };
-          users.onerror = (event) => {
-            console.log(event);
-            alert('Error occured');
-          };
-        }
-        else {
-          const users = userData.put({
-            id: selectedEmployee?.id,
-            name,
-            role,
-            salary,
-          });
-          users.onsuccess = () => {
-            transaction.oncomplete = () => {
-              db.close();
-            };
-            alert('Employee updated');
-          };
-          users.onerror = (event) => {
-            console.log(event);
-            alert('Error occured');
-          };
-        }
-      };
-    }
-  };
+ 
   React.useEffect(() => {
     createCollectionsInIndexedDB();
     getAllData();
@@ -112,17 +67,79 @@ const App = () => {
       };
     };
   };
+   const onSubmit = (event) => {
+     const dbPromise = idb.open('test-db', 2);
+     console.log(addEmployee, updateEmployee);
+     if (name && role && salary) {
+       dbPromise.onsuccess = () => {
+         const db = dbPromise.result;
+         const transaction = db.transaction('userData', 'readwrite');
+         const userData = transaction.objectStore('userData');
+         console.log(addEmployee, updateEmployee);
+
+         if (addEmployee) {
+           const users = userData.put({
+             id: allEmployeeData?.length + 1,
+             name,
+             role,
+             salary,
+           });
+           users.onsuccess = (query) => {
+             transaction.oncomplete = () => {
+               db.close();
+             };
+             alert('Employee added');
+             setName('');
+             setRole('');
+             setSalary('');
+             setUpdateEmployee(false);
+             getAllData();
+             event.preventDefault();
+           };
+           users.onerror = (event) => {
+             console.log(event);
+             alert('Error occured');
+           };
+         } else {
+           const users = userData.put({
+             id: selectedEmployee?.id,
+             name,
+             role,
+             salary,
+           });
+           users.onsuccess = (query) => {
+             transaction.oncomplete = () => {
+               db.close();
+             };
+             alert('Employee updated');
+             setName('');
+             setRole('');
+             setSalary('');
+             setAddEmployee(false);
+             getAllData();
+             event.preventDefault();
+           };
+           users.onerror = (event) => {
+             console.log(event);
+             alert('Error occured');
+           };
+         }
+       };
+     }
+   };
   const removeData = (user) => {
     const dbPromise = idb.open('test-db', 2);
     dbPromise.onsuccess = () => {
       const db = dbPromise.result;
       const transaction = db.transaction('userData', 'readwrite');
       const userData = transaction.objectStore('userData');
-      const users = userData.delete(user?.id);
-      users.onsuccess = (query) => {
-        alert('Employee deleted')
+      const deleteUsers = userData.delete(user?.id);
+      deleteUsers.onsuccess = (query) => {
+        alert('Employee deleted');
+        console.log(removeData)
+        getAllData();
       };
-      users.onerror = (query) => {
+      deleteUsers.onerror = (query) => {
         alert('Error while loading');
         getAllData();
       };
@@ -143,8 +160,10 @@ const App = () => {
         label='Add'
       />
       {addEmployee || updateEmployee ? (
-        <section>
-          <h3>{addEmployee? 'Add Employee Details' : 'Update Employee Details'}</h3>
+        <section className='App__section'>
+          <h3>
+            {addEmployee ? 'Add Employee Details' : 'Update Employee Details'}
+          </h3>
           <InputTextField
             value={name}
             label='Name: '
@@ -161,12 +180,8 @@ const App = () => {
             onchangeValue={onChangeSalary}
           />
           <Button
-            onClickButton={() => {
-              onSubmit();
-              // setAddEmployee(true);
-              // setUpdateEmployee(false);
-            }}
-            label={addEmployee? 'Add' : "Update"}
+            onClickButton={onSubmit}
+            label={addEmployee ? 'Add' : 'Update'}
           />{' '}
         </section>
       ) : null}
@@ -188,7 +203,10 @@ const App = () => {
                 <td>{user?.salary}</td>
                 <td>
                   <Button
-                    onClickButton={() => { setRemoveEmployee(true); removeData(user) }}
+                    onClickButton={() => {
+                      setRemoveEmployee(true);
+                      removeData(user);
+                    }}
                     label='Remove'
                   />
                 </td>

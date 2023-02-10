@@ -1,0 +1,23 @@
+.input-container {
+    display: flex;
+    padding: 0.5em;
+    justify-content: space-between;
+    /* width: 50%; */
+    margin: auto;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.input-container__label {
+  font-size: large;
+}
+
+.input-container__form {
+  width: 50%;
+}
+
+.input-container__input {
+  width: 100%;
+  padding: 0.5em 0.3em;
+}
