@@ -1,4 +1,4 @@
-import { legacy_createStore } from 'redux';
+import { legacy_createStore as createStore, applyMiddleware, compose } from "redux";
 
 const initialState = {
   name: '',
@@ -52,7 +52,13 @@ export const reducer = (state = initialState, action) => {
   }
 };
 
-const store = legacy_createStore(reducer);
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(reducer, composeEnhancers(applyMiddleware()));
+console.log(store.getState());
+store.subscribe(() => {
+  console.log("Action Dispatched: ", store.getState());
+});
+
 
 export default store;
 

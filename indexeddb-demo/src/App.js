@@ -3,6 +3,9 @@ import "./App.css";
 import InputTextField from "./components/InputTextField";
 import Button from "./components/Button";
 import store from "./state/store";
+require("react-dom");
+window.React2 = require("react");
+console.log(window.React1 === window.React2);
 
 const idb = window.indexedDB;
 
@@ -79,7 +82,7 @@ const App = () => {
     const dbPromise = idb.open("test-db", 2);
     dbPromise.onsuccess = () => {
       const db = dbPromise.result;
-      const transaction = db.transaction("userData", "readonly");
+      const transaction = db.transaction(["userData"], "readonly");
       const userData = transaction.objectStore("userData");
       const users = userData.getAll();
       users.onsuccess = (query) => {
@@ -96,7 +99,7 @@ const App = () => {
     if (name && role && salary) {
       dbPromise.onsuccess = () => {
         const db = dbPromise.result;
-        const transaction = db.transaction("userData", "readwrite");
+        const transaction = db.transaction(["userData"], "readwrite");
         const userData = transaction.objectStore("userData");
         console.log(addEmployee, updateEmployee);
 
@@ -159,7 +162,7 @@ const App = () => {
       const deleteUsers = userData.delete(user?.id);
       deleteUsers.onsuccess = (query) => {
         alert("Employee deleted");
-        console.log(removeData);
+        // console.log(removeData);
         getAllData();
       };
       deleteUsers.onerror = (query) => {
