@@ -3,6 +3,7 @@ import "./App.css";
 import InputTextField from "./components/InputTextField";
 import Button from "./components/Button";
 import store from "./state/store";
+
 require("react-dom");
 window.React2 = require("react");
 console.log(window.React1 === window.React2);
@@ -70,6 +71,19 @@ const App = () => {
       payload: event.target.value,
     });
   };
+  const onClickRemove = (event) => {
+    setRemoveEmployee(true);
+    store.dispatch({
+      type: "REMOVE_EMPLOYEE",
+      payload:id,
+    })
+  }
+  const onSubmitAdd = (event) => {
+    store.dispatch({
+      type: "ADD_EMPLOYEE",
+      payload:{name,role,salary},
+    })
+  }
 
   React.useEffect(() => {
     createCollectionsInIndexedDB();
@@ -93,6 +107,7 @@ const App = () => {
       };
     };
   };
+
   const onSubmit = (event) => {
     const dbPromise = idb.open("test-db", 2);
     console.log(addEmployee, updateEmployee);
@@ -230,7 +245,7 @@ const App = () => {
                 <td>
                   <Button
                     onClickButton={() => {
-                      setRemoveEmployee(true);
+                      onClickRemove();
                       removeData(user);
                     }}
                     label="Remove"

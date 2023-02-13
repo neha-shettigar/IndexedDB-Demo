@@ -1,58 +1,10 @@
 import { legacy_createStore as createStore, applyMiddleware, compose } from "redux";
+import {reducer} from "./reducer"
 
-const initialState = {
-  name: '',
-  role: '',
-  salary: '',
-  allEmployeeData: [],
-  addEmployee: false,
-  updateEmployee: false,
-  selectedEmployee: {}
-};
-
-export const reducer = (state = initialState, action) => {
-  switch (action.type) {
-    case 'SET_NAME':
-      return {
-        ...state,
-        name: action.payload
-      };
-    case 'SET_ROLE':
-      return {
-        ...state,
-        role: action.payload
-      };
-    case 'SET_SALARY':
-      return {
-        ...state,
-        salary: action.payload
-      };
-    case 'ADD_EMPLOYEE':
-      return {
-        ...state,
-        addEmployee: action.payload
-      };
-    case 'UPDATE_EMPLOYEE':
-      return {
-        ...state,
-        updateEmployee: action.payload
-      };
-    case 'SET_SELECTED_EMPLOYEE':
-      return {
-        ...state,
-        selectedEmployee: action.payload
-      };
-    case 'SET_ALL_EMPLOYEE_DATA':
-      return {
-        ...state,
-        allEmployeeData: action.payload
-      };
-    default:
-      return state;
-  }
-};
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+
+// Create a Redux store that holds the state tree.
 const store = createStore(reducer, composeEnhancers(applyMiddleware()));
 console.log(store.getState());
 store.subscribe(() => {

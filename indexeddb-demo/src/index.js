@@ -6,7 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import { legacy_createStore as createStore,compose } from "redux";
 
 import { Provider } from "react-redux";
-import { reducer } from "./state/store";
+import { reducer } from "./state/reducer";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 window.React1 = require("react");
